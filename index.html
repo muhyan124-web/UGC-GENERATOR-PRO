@@ -235,7 +235,7 @@
       }
     }
 
-    async function fetchGeminiContent(apiKey, data) {
+        async function fetchGeminiContent(apiKey, data) {
       const prompt = `
 Kamu adalah pakar Pemasaran UGC (User Generated Content) & Copywriter Konten Viral.
 Analisis produk berikut dan buatkan konten pemasaran lengkap dalam bentuk JSON saja:
@@ -263,6 +263,50 @@ Kembalikan respon PERSIS dalam format JSON berikut tanpa teks tambahan:
   "cta": ["10 kalimat CTA kuat"],
   "hashtags": ["10 hashtag populer"]
 }
+`;
+
+      // Menggunakan Endpoint v1beta
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+      // Menyusun Header lengkap (Mengirim API Key di URL & Authorization Header sekaligus)
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      };
+
+      let response = await fetch(url, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: "application/json" }
+        })
+      });
+
+      // Fallback ke model 1.5-pro jika 1.5-flash sibuk
+      if (!response.ok) {
+        const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`;
+        response = await fetch(fallbackUrl, {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { responseMimeType: "application/json" }
+          })
+        });
+      }
+
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        const errMsg = errJson.error?.message || response.statusText;
+        throw new Error(`[Status ${response.status}] ${errMsg}`);
+      }
+
+      const resData = await response.json();
+      const textResponse = resData.candidates[0].content.parts[0].text;
+      return JSON.parse(textResponse);
+    }
+
 `;
 
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
