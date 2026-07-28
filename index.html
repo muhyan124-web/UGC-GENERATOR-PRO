@@ -199,16 +199,9 @@
     async function handleGenerate(e) {
       e.preventDefault();
       
-      // ==========================================
-      // TEMPELKAN API KEY GEMINI KAMU DI DI BAWAH INI:
-      // ==========================================
+      // PASTE API KEY GEMINI LENGKAP KAMU DI DALAM TANDA KUTIP DI BAWAH INI:
       const apiKey = "AQ.Ab8RN6KxNaGDxGK3eGDCFCpQbqv4KJlSqVIyDUQvcHKtSKyLkw
-Pw github : muhyan124-web";
-
-      if (!apiKey || apiKey === "PASTE_API_KEY_GEMINI_DI_SINI") {
-        alert('Tolong ganti tulisan PASTE_API_KEY_GEMINI_DI_SINI di dalam kode index.html dengan Gemini API Key kamu yang asli!');
-        return;
-      }
+Pw github : muhyan124-";
 
       const payload = {
         url: document.getElementById('productUrl').value,
