@@ -75,7 +75,7 @@
         <h1 class="text-2xl sm:text-3xl font-extrabold mb-2 text-white">Generate UGC Content</h1>
         <p class="text-slate-400 mb-6 text-sm sm:text-base">Masukkan URL produk atau detail produk untuk menghasilkan copy iklan viral instant.</p>
 
-        <form id="generator-form" onsubmit="handleGenerate(event)" class="space-y-4">
+        <div class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             
             <div class="md:col-span-2">
@@ -126,11 +126,11 @@
 
           </div>
 
-          <button type="submit" id="btn-submit" class="w-full mt-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2">
+          <button type="button" onclick="executeGenerate()" id="btn-submit" class="w-full mt-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2">
             <i data-lucide="sparkles" class="w-5 h-5"></i>
             <span>Generate Content Now</span>
           </button>
-        </form>
+        </div>
       </section>
 
       <!-- Loading State -->
@@ -196,18 +196,23 @@
       if (tabName === 'history') renderHistory();
     }
 
-    async function handleGenerate(e) {
-      e.preventDefault();
-      
-      // PASTE API KEY GEMINI LENGKAP KAMU DI DALAM TANDA KUTIP DI BAWAH INI:
-      const apiKey = "AQ.Ab8RN6KxNaGDxGK3eGDCFCpQbqv4KJlSqVIyDUQvcHKtSKyLkw
-Pw github : muhyan124-";
+    async function executeGenerate() {
+      // PASTE API KEY GEMINI KAMU DI SINI:
+      const apiKey = "AQ.Ab8RN6KxNaGDxGK3eGDCFCpQbqv4KJlSqVIyDUQvcHKtSKyLkw";
+
+      const urlVal = document.getElementById('productUrl').value.trim();
+      const nameVal = document.getElementById('productName').value.trim();
+
+      if (!nameVal) {
+        alert("Mohon isi Nama Produk / Deskripsi Singkat terlebih dahulu!");
+        return;
+      }
 
       const payload = {
-        url: document.getElementById('productUrl').value,
-        productName: document.getElementById('productName').value,
+        url: urlVal || "-",
+        productName: nameVal,
         marketplace: document.getElementById('marketplace').value,
-        targetAudience: document.getElementById('targetAudience').value,
+        targetAudience: document.getElementById('targetAudience').value || "Umum",
         language: document.getElementById('language').value,
         style: document.getElementById('style').value
       };
