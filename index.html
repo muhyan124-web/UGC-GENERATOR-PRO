@@ -34,11 +34,6 @@
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
-    .glass-card {
-      background: rgba(30, 41, 59, 0.5);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.05);
-    }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col">
@@ -82,13 +77,13 @@
               <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Product URL / Marketplace Link</label>
               <div class="relative">
                 <i data-lucide="link" class="absolute left-3.5 top-3.5 w-5 h-5 text-slate-500"></i>
-                <input type="url" id="productUrl" placeholder="https://shopee.co.id/product/..." required class="w-full pl-11 pr-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm text-slate-100 placeholder-slate-500 transition">
+                <input type="url" id="productUrl" placeholder="https://shopee.co.id/product/..." class="w-full pl-11 pr-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm text-slate-100 placeholder-slate-500 transition">
               </div>
             </div>
 
             <div>
               <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Nama Produk / Deskripsi Singkat</label>
-              <input type="text" id="productName" placeholder="Contoh: Lampu LED Portable Charge" required class="w-full px-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm text-slate-100 placeholder-slate-500">
+              <input type="text" id="productName" placeholder="Contoh: Lampu LED Portable Charge" class="w-full px-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm text-slate-100 placeholder-slate-500">
             </div>
 
             <div>
@@ -146,16 +141,7 @@
       <div id="output-section" class="hidden space-y-6">
         <div class="flex items-center justify-between">
           <h2 class="text-2xl font-bold">Hasil Campaign UGC</h2>
-          <div class="flex gap-2">
-            <button onclick="downloadAllMarkdown()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-medium flex items-center gap-1.5 transition">
-              <i data-lucide="file-text" class="w-4 h-4"></i> Export Markdown
-            </button>
-            <button onclick="downloadAllTxt()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-medium flex items-center gap-1.5 transition">
-              <i data-lucide="download" class="w-4 h-4"></i> Export TXT
-            </button>
-          </div>
         </div>
-
         <div id="results-container" class="space-y-6"></div>
       </div>
 
@@ -178,8 +164,7 @@
   <script>
     let currentResultData = null;
 
-    // Load Lucide Icons
-    lucide.createIcons();
+    try { lucide.createIcons(); } catch(e){}
 
     function showToast(msg) {
       const toast = document.getElementById('toast');
@@ -192,13 +177,13 @@
       document.getElementById('tab-generator').classList.add('hidden');
       document.getElementById('tab-history').classList.add('hidden');
       
-      document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+      document.getElementById('tab-' + tabName).classList.remove('hidden');
       if (tabName === 'history') renderHistory();
     }
 
     async function executeGenerate() {
-      // PASTE API KEY GEMINI KAMU DI SINI:
-      const apiKey = "AQ.Ab8RN6IsBl4cX0LC6suWKiP5IFGFRGWWq7jc6KlO8KAkBPNZnA";
+      // PASTE KUNCI GEMINI TERBARU KAMU DI DALAM TANDA KUTIP DI BAWAH INI:
+      const apiKey = "AQ.Ab8RN6IakeqIgcxvbucb_PJHE4DMk6Aj4LyPfuewPzvsBA0ONw";
 
       const urlVal = document.getElementById('productUrl').value.trim();
       const nameVal = document.getElementById('productName').value.trim();
@@ -235,83 +220,13 @@
       }
     }
 
-        async function fetchGeminiContent(apiKey, data) {
-      const prompt = `
-Kamu adalah pakar Pemasaran UGC (User Generated Content) & Copywriter Konten Viral.
-Analisis produk berikut dan buatkan konten pemasaran lengkap dalam bentuk JSON saja:
+    async function fetchGeminiContent(apiKey, data) {
+      const prompt = "Kamu adalah pakar Pemasaran UGC. Buatkan JSON sesuai data berikut: Produk: " + data.productName + ", Marketplace: " + data.marketplace + ", Target: " + data.targetAudience + ", Bahasa: " + data.language + ", Style: " + data.style + ". Kembalikan JSON persis seperti ini: {\"summary\":\"\",\"hooks\":[\"\"],\"scripts\":[{\"hook\":\"\",\"problem\":\"\",\"solution\":\"\",\"cta\":\"\"}],\"captions\":[\"\"],\"keywords\":[\"\"],\"cta\":[\"\"],\"hashtags\":[\"\"]}";
 
-Detail Produk:
-- Nama Produk: ${data.productName}
-- URL/Marketplace: ${data.url} (${data.marketplace})
-- Target Audience: ${data.targetAudience}
-- Bahasa Output: ${data.language}
-- Gaya Bahasa/Tone: ${data.style}
+      // Menggunakan URL standar Gemini tanpa header terselubung biar tidak kena CORS
+      const endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + apiKey;
 
-Kembalikan respon PERSIS dalam format JSON berikut tanpa teks tambahan:
-{
-  "summary": "Satu ringkasan eksekutif profesional produk",
-  "hooks": ["Hook 1", "Hook 2", "Hook 3", "Hook 4", "Hook 5"],
-  "scripts": [
-    {"hook": "", "problem": "", "solution": "", "cta": ""},
-    {"hook": "", "problem": "", "solution": "", "cta": ""},
-    {"hook": "", "problem": "", "solution": "", "cta": ""},
-    {"hook": "", "problem": "", "solution": "", "cta": ""},
-    {"hook": "", "problem": "", "solution": "", "cta": ""}
-  ],
-  "captions": ["Caption panjang 1", "Caption 2", "Caption 3", "Caption 4", "Caption 5"],
-  "keywords": ["20 keyword SEO terpisah koma"],
-  "cta": ["10 kalimat CTA kuat"],
-  "hashtags": ["10 hashtag populer"]
-}
-`;
-
-      // Menggunakan Endpoint v1beta
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
-      // Menyusun Header lengkap (Mengirim API Key di URL & Authorization Header sekaligus)
-      const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      };
-
-      let response = await fetch(url, {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: "application/json" }
-        })
-      });
-
-      // Fallback ke model 1.5-pro jika 1.5-flash sibuk
-      if (!response.ok) {
-        const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${apiKey}`;
-        response = await fetch(fallbackUrl, {
-          method: 'POST',
-          headers: headers,
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
-          })
-        });
-      }
-
-      if (!response.ok) {
-        const errJson = await response.json().catch(() => ({}));
-        const errMsg = errJson.error?.message || response.statusText;
-        throw new Error(`[Status ${response.status}] ${errMsg}`);
-      }
-
-      const resData = await response.json();
-      const textResponse = resData.candidates[0].content.parts[0].text;
-      return JSON.parse(textResponse);
-    }
-
-`;
-
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
-      let response = await fetch(url, {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -321,21 +236,9 @@ Kembalikan respon PERSIS dalam format JSON berikut tanpa teks tambahan:
       });
 
       if (!response.ok) {
-        const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-        response = await fetch(fallbackUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
-          })
-        });
-      }
-
-      if (!response.ok) {
         const errJson = await response.json().catch(() => ({}));
         const errMsg = errJson.error?.message || response.statusText;
-        throw new Error(`[Status ${response.status}] ${errMsg}`);
+        throw new Error("[Status " + response.status + "] " + errMsg);
       }
 
       const resData = await response.json();
@@ -347,37 +250,32 @@ Kembalikan respon PERSIS dalam format JSON berikut tanpa teks tambahan:
       const container = document.getElementById('results-container');
       container.innerHTML = '';
 
-      container.appendChild(createSectionCard('Product Summary', `<p class="text-slate-300">${res.summary}</p>`, res.summary));
+      container.appendChild(createSectionCard('Product Summary', '<p class="text-slate-300">' + res.summary + '</p>', res.summary));
 
-      const hooksHTML = `<ul class="list-disc pl-5 space-y-2 text-slate-300">${res.hooks.map(h => `<li>${h}</li>`).join('')}</ul>`;
-      container.appendChild(createSectionCard('5 Viral Hooks', hooksHTML, res.hooks.join('\n')));
+      const hooksHTML = '<ul class="list-disc pl-5 space-y-2 text-slate-300">' + res.hooks.map(h => '<li>' + h + '</li>').join('') + '</ul>';
+      container.appendChild(createSectionCard('Viral Hooks', hooksHTML, res.hooks.join('\n')));
 
       const scriptsHTML = res.scripts.map((s, i) => `
-        <div class="p-4 bg-slate-900/60 rounded-xl mb-3 border border-slate-800">
+        <div class="p-4 bg-slate-900/60 rounded-xl mb-3 border border-slate-800 text-xs text-slate-300 space-y-1">
           <div class="font-bold text-blue-400 mb-1">Skrip ${i+1}</div>
-          <div class="text-xs text-slate-300 space-y-1">
-            <p><strong>Hook:</strong> ${s.hook}</p>
-            <p><strong>Problem:</strong> ${s.problem}</p>
-            <p><strong>Solution:</strong> ${s.solution}</p>
-            <p><strong>CTA:</strong> ${s.cta}</p>
-          </div>
+          <p><strong>Hook:</strong> ${s.hook}</p>
+          <p><strong>Problem:</strong> ${s.problem}</p>
+          <p><strong>Solution:</strong> ${s.solution}</p>
+          <p><strong>CTA:</strong> ${s.cta}</p>
         </div>
       `).join('');
-      container.appendChild(createSectionCard('5 Video Script Ideas', scriptsHTML, JSON.stringify(res.scripts, null, 2)));
+      container.appendChild(createSectionCard('Video Scripts', scriptsHTML, JSON.stringify(res.scripts, null, 2)));
 
       const captionsHTML = res.captions.map((c, i) => `<div class="p-3 bg-slate-900/60 rounded-lg mb-2 text-slate-300 text-sm"><strong>Option ${i+1}:</strong> ${c}</div>`).join('');
-      container.appendChild(createSectionCard('5 Long-form Captions', captionsHTML, res.captions.join('\n\n')));
+      container.appendChild(createSectionCard('Captions', captionsHTML, res.captions.join('\n\n')));
 
-      const keywordsHTML = `<div class="flex flex-wrap gap-2">${res.keywords.map(k => `<span class="px-2.5 py-1 bg-slate-800 text-blue-300 text-xs rounded-md border border-slate-700">${k}</span>`).join('')}</div>`;
-      container.appendChild(createSectionCard('20 Viral Keywords (SEO)', keywordsHTML, res.keywords.join(', ')));
+      const keywordsHTML = '<div class="flex flex-wrap gap-2">' + res.keywords.map(k => '<span class="px-2.5 py-1 bg-slate-800 text-blue-300 text-xs rounded-md border border-slate-700">' + k + '</span>').join('') + '</div>';
+      container.appendChild(createSectionCard('Keywords (SEO)', keywordsHTML, res.keywords.join(', ')));
 
-      const ctaHTML = `<ul class="list-decimal pl-5 space-y-1 text-slate-300 text-sm">${res.cta.map(c => `<li>${c}</li>`).join('')}</ul>`;
-      container.appendChild(createSectionCard('10 Call To Actions', ctaHTML, res.cta.join('\n')));
+      const hashtagsHTML = '<div class="text-blue-400 font-medium text-sm">' + res.hashtags.join(' ') + '</div>';
+      container.appendChild(createSectionCard('Hashtags', hashtagsHTML, res.hashtags.join(' ')));
 
-      const hashtagsHTML = `<div class="text-blue-400 font-medium text-sm">${res.hashtags.join(' ')}</div>`;
-      container.appendChild(createSectionCard('10 Trending Hashtags', hashtagsHTML, res.hashtags.join(' ')));
-
-      lucide.createIcons();
+      try { lucide.createIcons(); } catch(e){}
     }
 
     function createSectionCard(title, contentHTML, rawData) {
@@ -386,47 +284,18 @@ Kembalikan respon PERSIS dalam format JSON berikut tanpa teks tambahan:
       card.innerHTML = `
         <div class="flex items-center justify-between border-b border-slate-800 pb-3">
           <h3 class="font-bold text-lg text-white">${title}</h3>
-          <button onclick="copyToClipboard(\`${encodeURIComponent(rawData)}\`)" class="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-300 transition text-xs flex items-center gap-1">
-            <i data-lucide="copy" class="w-4 h-4"></i> Copy
-          </button>
         </div>
         <div>${contentHTML}</div>
       `;
       return card;
     }
 
-    function copyToClipboard(encodedData) {
-      const data = decodeURIComponent(encodedData);
-      navigator.clipboard.writeText(data);
-      showToast('Teks berhasil disalin!');
-    }
-
-    function downloadAllTxt() {
-      if (!currentResultData) return;
-      const text = JSON.stringify(currentResultData, null, 2);
-      downloadFile('ugc-content.txt', text, 'text/plain');
-    }
-
-    function downloadAllMarkdown() {
-      if (!currentResultData) return;
-      let md = `# UGC Marketing Campaign\n\n`;
-      md += `## Summary\n${currentResultData.summary}\n\n`;
-      md += `## Viral Hooks\n${currentResultData.hooks.map(h => `- ${h}`).join('\n')}\n\n`;
-      downloadFile('ugc-content.md', md, 'text/markdown');
-    }
-
-    function downloadFile(filename, content, mime) {
-      const blob = new Blob([content], { type: mime });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = filename;
-      a.click();
-    }
-
     function saveToHistory(productName, data) {
-      const history = JSON.parse(localStorage.getItem('UGC_HISTORY') || '[]');
-      history.unshift({ productName, date: new Date().toLocaleDateString(), data });
-      localStorage.setItem('UGC_HISTORY', JSON.stringify(history.slice(0, 10)));
+      try {
+        const history = JSON.parse(localStorage.getItem('UGC_HISTORY') || '[]');
+        history.unshift({ productName, date: new Date().toLocaleDateString(), data });
+        localStorage.setItem('UGC_HISTORY', JSON.stringify(history.slice(0, 10)));
+      } catch(e){}
     }
 
     function renderHistory() {
